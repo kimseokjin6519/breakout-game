@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from "react";
 
 const App = () => {
   const canvasRef = useRef(null);
-  const sphereRef = useRef({ x: 250, y: 500, radius: 10, dx: 0, dy: 0 });
+  const sphereRef = useRef({ x: 300, y: 300, radius: 10, dx: 0, dy: 0 });
   const paddleRef = useRef({ x: 250, width: 100 });
 
   useEffect(() => {
@@ -46,8 +46,8 @@ const App = () => {
       const speed = 2; // Ball speed
       const randomAngle = Math.random() * Math.PI / 2 + Math.PI / 4;
 
-      sphereRef.current.x = 250; // Reset ball position
-      sphereRef.current.y = 500; // Reset ball position
+      sphereRef.current.x = 300; // Reset ball position
+      sphereRef.current.y = 400; // Reset ball position
 
       sphereRef.current.dx = speed * Math.cos(randomAngle);
       sphereRef.current.dy = -speed * Math.sin(randomAngle); // Ball moves upwards
