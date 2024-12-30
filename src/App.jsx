@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 
 const App = () => {
-
+   
    const blockRef = useRef([]);
 
    const blocksPerRow = 8; const numberOfRows = 3;
