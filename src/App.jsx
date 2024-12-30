@@ -65,7 +65,7 @@ const App = () => {
       };
 
       const restartBallMovement = () => {
-         const speed = 3.0;
+         const speed = 2.0;
          const randomAngle = Math.random() * Math.PI / 2 + Math.PI / 4;
 
          sphereRef.current.x = 300;
