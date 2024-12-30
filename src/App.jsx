@@ -4,12 +4,15 @@ const App = () => {
    
    const blockRef = useRef([]);
 
-   const blocksPerRow = 8; const numberOfRows = 3;
+   const blocksPerRow = 8;
+   const numberOfRows = 3;
    const blockWidth = 60;
    const blockHeight = 20;
    const blockGap = 8;
    const blockPosition = { x: 30, y: 30 };
-   
+   const blockRadius = 10;
+   const paddleRadius = 4;
+
    for (let row = 0; row < numberOfRows; row++) {
       for (let col = 0; col < blocksPerRow; col++) {
          blockRef.current.push({
@@ -17,6 +20,7 @@ const App = () => {
             y: blockPosition.y + (blockHeight + blockGap) * row,
             width: blockWidth,
             height: blockHeight,
+            blockRadius: blockRadius,
             visible: true
          });
       }
@@ -36,15 +40,53 @@ const App = () => {
       canvas.height = 600;
 
       const drawPaddle = () => {
-         context.fillStyle = "blue";
-         context.fillRect(paddleRef.current.x, canvas.height - 100, paddleRef.current.width, 10);
-      };
+         const { x, width } = paddleRef.current;
+ 
+         const y = canvas.height - 100;
+         
+         context.fillStyle = "blue"; 
+     
+         context.beginPath();
+         
+         context.moveTo(x + paddleRadius, y);
+         
+         context.lineTo(x + width - paddleRadius, y);
+         
+         context.arcTo(x + width, y, x + width, y + paddleRadius, paddleRadius);
+         
+         context.lineTo(x + width, y + 10 - paddleRadius); 
+         
+         context.arcTo(x + width, y + 10, x, y + 10, paddleRadius);
+         
+         context.lineTo(x + paddleRadius, y + 10);
+         
+         context.arcTo(x, y + 10, x, y, paddleRadius);
+         
+         context.lineTo(x, y + paddleRadius);
+         
+         context.arcTo(x, y, x + width - paddleRadius, y, paddleRadius);
+         context.closePath();
+         context.fill();
+     };
+     
 
       const drawBlock = () => {
          blockRef.current.forEach((block) => {
             if (block.visible) {
                context.fillStyle = "white";
-               context.fillRect(block.x, block.y, block.width, block.height);
+               context.beginPath();
+               const { x, y, width, height, blockRadius } = block;
+               context.moveTo(x + blockRadius, y);
+               context.lineTo(x + width - blockRadius, y);
+               context.arcTo(x + width, y, x + width, y + height, blockRadius);
+               context.lineTo(x + width, y + height - blockRadius);
+               context.arcTo(x + width, y + height, x, y + height, blockRadius);
+               context.lineTo(x + blockRadius, y + height);
+               context.arcTo(x, y + height, x, y, blockRadius);
+               context.lineTo(x, y + blockRadius);
+               context.arcTo(x, y, x + width - blockRadius, y, blockRadius);
+               context.closePath();
+               context.fill();
             }
          });
       };
@@ -67,10 +109,8 @@ const App = () => {
       const restartBallMovement = () => {
          const speed = 2.0;
          const randomAngle = Math.random() * Math.PI / 2 + Math.PI / 4;
-
          sphereRef.current.x = 300;
          sphereRef.current.y = 400;
-
          sphereRef.current.dx = speed * Math.cos(randomAngle);
          sphereRef.current.dy = -speed * Math.sin(randomAngle);
       };
@@ -123,7 +163,6 @@ const App = () => {
          context.clearRect(0, 0, canvas.width, canvas.height);
          context.fillStyle = "black";
          context.fillRect(0, 0, canvas.width, canvas.height);
-
          updateBallPosition();
          drawBlock();
          drawPaddle();
