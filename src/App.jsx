@@ -30,7 +30,7 @@ const App = () => {
 
    const sphereRef = useRef({ x: 300, y: 400, radius: 10, dx: 0, dy: 0 });
 
-   const paddleRef = useRef({ x: 250, width: 100 });
+   const paddleRef = useRef({ x: 250, width: 75 });
 
    useEffect(() => {
       const canvas = canvasRef.current;
