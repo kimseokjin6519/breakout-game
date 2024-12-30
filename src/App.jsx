@@ -27,47 +27,31 @@ const App = () => {
    }
 
    const canvasRef = useRef(null);
-
    const sphereRef = useRef({ x: 300, y: 400, radius: 10, dx: 0, dy: 0 });
-
-   const paddleRef = useRef({ x: 250, width: 75 });
-
+   const paddleRef = useRef({ x: 250, y: 500, width: 75, height: 10 });
+   
    useEffect(() => {
       const canvas = canvasRef.current;
       const context = canvas.getContext("2d");
-
       canvas.width = 600;
       canvas.height = 600;
 
       const drawPaddle = () => {
-         const { x, width } = paddleRef.current;
- 
-         const y = canvas.height - 100;
-         
+         const { x, y, width } = paddleRef.current;
          context.fillStyle = "blue"; 
-     
          context.beginPath();
-         
          context.moveTo(x + paddleRadius, y);
-         
          context.lineTo(x + width - paddleRadius, y);
-         
          context.arcTo(x + width, y, x + width, y + paddleRadius, paddleRadius);
-         
          context.lineTo(x + width, y + 10 - paddleRadius); 
-         
          context.arcTo(x + width, y + 10, x, y + 10, paddleRadius);
-         
          context.lineTo(x + paddleRadius, y + 10);
-         
          context.arcTo(x, y + 10, x, y, paddleRadius);
-         
          context.lineTo(x, y + paddleRadius);
-         
          context.arcTo(x, y, x + width - paddleRadius, y, paddleRadius);
          context.closePath();
          context.fill();
-     };
+      };
      
 
       const drawBlock = () => {
@@ -115,28 +99,42 @@ const App = () => {
          sphereRef.current.dy = -speed * Math.sin(randomAngle);
       };
 
-      const updateBallPosition = () => {
+      const updateBall = () => {
+         
          const sphere = sphereRef.current;
+         const paddle = paddleRef.current;
+
+         /* Update Position */
+   
          sphere.x += sphere.dx;
          sphere.y += sphere.dy;
-
-         if (sphere.x - sphere.radius <= 0 || sphere.x + sphere.radius >= canvas.width) {
+         
+         /* Boundary Check X */
+         
+         if (sphere.x - sphere.radius <= 0 || sphere.x + sphere.radius >= canvas.width)
             sphere.dx = -sphere.dx;
-         }
 
-         if (sphere.y - sphere.radius <= 0 || sphere.y + sphere.radius >= canvas.height) {
+         /* Boundary Check Y */
+
+         if (sphere.y - sphere.radius <= 0 || sphere.y + sphere.radius >= canvas.height)
             sphere.dy = -sphere.dy;
-         }
 
-         if (
-            sphere.y + sphere.radius >= canvas.height - 100 &&
-            sphere.x >= paddleRef.current.x &&
-            sphere.x <= paddleRef.current.x + paddleRef.current.width
-         ) {
+         /* Paddle Collision */
+
+         if (  sphere.y + sphere.radius >= paddle.y && 
+               sphere.y - sphere.radius <= paddle.y + paddle.height &&      
+               
+               sphere.x >= paddle.x &&
+               sphere.x <= paddle.x + paddle.width
+
+            ) 
+         
             sphere.dy = -sphere.dy;
-         }
 
+         /* Block Collision */
+         
          blockRef.current.forEach((block) => {
+         
             if (block.visible) {
                if (
                   sphere.x + sphere.radius > block.x &&
@@ -144,49 +142,52 @@ const App = () => {
                   sphere.y + sphere.radius > block.y &&
                   sphere.y - sphere.radius < block.y + block.height
                ) {
-                  block.visible = false;
-
-                  if (
-                     sphere.x + sphere.radius > block.x &&
-                     sphere.x - sphere.radius < block.x + block.width
-                  ) {
-                     sphere.dy = -sphere.dy;
-                  } else {
-                     sphere.dx = -sphere.dx;
-                  }
-               }
+   
+                     block.visible = false;
+                     if ( sphere.x + sphere.radius > block.x && sphere.x - sphere.radius < block.x + block.width ) 
+                        sphere.dy = -sphere.dy;
+                     else 
+                        sphere.dx = -sphere.dx;         
+               }   
             }
          });
+
       };
 
       const gameLoop = () => {
+        
          context.clearRect(0, 0, canvas.width, canvas.height);
          context.fillStyle = "black";
          context.fillRect(0, 0, canvas.width, canvas.height);
-         updateBallPosition();
+        
          drawBlock();
-         drawPaddle();
          drawSphere();
+         drawPaddle();
+         updateBall();
+         
       };
-
-      restartBallMovement();
 
       const handleMouseClick = () => {
          restartBallMovement();
       };
 
-      const intervalId = setInterval(() => {
-         gameLoop();
-      }, 1000 / 120);
+      /* Try #1, Smooth Framerate 120 */
+
+      const intervalId = setInterval(() => { gameLoop() }, 1000 / 120);
+
+      /* "Canvas" Listeners */
 
       canvas.addEventListener("mousemove", handleMouseMove);
       canvas.addEventListener("click", handleMouseClick);
+
+      restartBallMovement();
 
       return () => {
          clearInterval(intervalId);
          canvas.removeEventListener("mousemove", handleMouseMove);
          canvas.removeEventListener("click", handleMouseClick);
       };
+
    }, []);
 
    return (
