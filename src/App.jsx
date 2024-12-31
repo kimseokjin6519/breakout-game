@@ -1,9 +1,11 @@
 import React, { useRef, useEffect } from "react";
+import Audio from "./Audio.jsx";
+import AudioPlayer from "./AudioPlayer.jsx";
 
 const App = () => {
-   
-   const blockRef = useRef([]);
 
+   const blockRef = useRef([]);
+   
    const blocksPerRow = 8;
    const numberOfRows = 3;
    const blockWidth = 60;
@@ -13,16 +15,19 @@ const App = () => {
    const blockRadius = 10;
    const paddleRadius = 4;
 
-   for (let row = 0; row < numberOfRows; row++) {
-      for (let col = 0; col < blocksPerRow; col++) {
-         blockRef.current.push({
-            x: blockPosition.x + (blockWidth + blockGap) * col,
-            y: blockPosition.y + (blockHeight + blockGap) * row,
-            width: blockWidth,
-            height: blockHeight,
-            blockRadius: blockRadius,
-            visible: true
-         });
+   const resetBlocks = () => {
+      blockRef.current = []; 
+      for (let row = 0; row < numberOfRows; row++) {
+         for (let col = 0; col < blocksPerRow; col++) {
+            blockRef.current.push({
+               x: blockPosition.x + (blockWidth + blockGap) * col,
+               y: blockPosition.y + (blockHeight + blockGap) * row,
+               width: blockWidth,
+               height: blockHeight,
+               blockRadius: blockRadius,
+               visible: true
+            });
+         }
       }
    }
 
@@ -91,7 +96,7 @@ const App = () => {
       };
 
       const restartBallMovement = () => {
-         const speed = 2.0;
+         const speed = 3.0;
          const randomAngle = Math.random() * Math.PI / 2 + Math.PI / 4;
          sphereRef.current.x = 300;
          sphereRef.current.y = 400;
@@ -131,7 +136,7 @@ const App = () => {
          
             sphere.dy = -sphere.dy;
 
-         /* Block Collision */
+         /* Block Collision, Rework  */
          
          blockRef.current.forEach((block) => {
          
@@ -154,6 +159,8 @@ const App = () => {
 
       };
 
+      resetBlocks();
+
       const gameLoop = () => {
         
          context.clearRect(0, 0, canvas.width, canvas.height);
@@ -169,6 +176,8 @@ const App = () => {
 
       const handleMouseClick = () => {
          restartBallMovement();
+         resetBlocks();
+         
       };
 
       /* Try #1, Smooth Framerate 120 */
@@ -191,8 +200,9 @@ const App = () => {
    }, []);
 
    return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
-         <canvas ref={canvasRef} width={600} height={600} style={{ cursor: "none" }}></canvas>
+      <div className="rounded-xl flex items-center justify-center h-screen bg-gray-100">
+         <AudioPlayer />
+         <canvas ref={canvasRef} width={600} height={600} style={{ cursor: "none", borderRadius: "30px"}}></canvas>
       </div>
    );
 };
