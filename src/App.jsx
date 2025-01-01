@@ -1,11 +1,11 @@
-import React, { useRef, useEffect } from "react";
-import Audio from "./Audio.jsx";
+import React, { useRef, useState, useEffect } from "react";
 import AudioPlayer from "./AudioPlayer.jsx";
 
 const App = () => {
 
+   const [gameStarted, setGameStarted] = useState(false);   
+   const audioRef = useRef(null);
    const blockRef = useRef([]);
-   
    const blocksPerRow = 8;
    const numberOfRows = 3;
    const blockWidth = 60;
@@ -34,7 +34,7 @@ const App = () => {
    const canvasRef = useRef(null);
    const sphereRef = useRef({ x: 300, y: 400, radius: 10, dx: 0, dy: 0 });
    const paddleRef = useRef({ x: 250, y: 500, width: 75, height: 10 });
-   
+
    useEffect(() => {
       const canvas = canvasRef.current;
       const context = canvas.getContext("2d");
@@ -57,7 +57,6 @@ const App = () => {
          context.closePath();
          context.fill();
       };
-     
 
       const drawBlock = () => {
          blockRef.current.forEach((block) => {
@@ -105,104 +104,90 @@ const App = () => {
       };
 
       const updateBall = () => {
-         
          const sphere = sphereRef.current;
          const paddle = paddleRef.current;
 
          /* Update Position */
-   
          sphere.x += sphere.dx;
          sphere.y += sphere.dy;
-         
+
          /* Boundary Check X */
-         
          if (sphere.x - sphere.radius <= 0 || sphere.x + sphere.radius >= canvas.width)
             sphere.dx = -sphere.dx;
 
          /* Boundary Check Y */
-
          if (sphere.y - sphere.radius <= 0 || sphere.y + sphere.radius >= canvas.height)
             sphere.dy = -sphere.dy;
 
          /* Paddle Collision */
-
-         if (  sphere.y + sphere.radius >= paddle.y && 
-               sphere.y - sphere.radius <= paddle.y + paddle.height &&      
-               
-               sphere.x >= paddle.x &&
-               sphere.x <= paddle.x + paddle.width
-
-            ) 
-         
+         if (sphere.y + sphere.radius >= paddle.y && 
+            sphere.y - sphere.radius <= paddle.y + paddle.height &&      
+            sphere.x >= paddle.x &&
+            sphere.x <= paddle.x + paddle.width) 
             sphere.dy = -sphere.dy;
 
-         /* Block Collision, Rework  */
-         
+         /* Block Collision */
          blockRef.current.forEach((block) => {
-         
             if (block.visible) {
-               if (
-                  sphere.x + sphere.radius > block.x &&
-                  sphere.x - sphere.radius < block.x + block.width &&
-                  sphere.y + sphere.radius > block.y &&
-                  sphere.y - sphere.radius < block.y + block.height
-               ) {
-   
+               if (sphere.x + sphere.radius > block.x &&
+                   sphere.x - sphere.radius < block.x + block.width &&
+                   sphere.y + sphere.radius > block.y &&
+                   sphere.y - sphere.radius < block.y + block.height) {
                      block.visible = false;
-                     if ( sphere.x + sphere.radius > block.x && sphere.x - sphere.radius < block.x + block.width ) 
+                     if (sphere.x + sphere.radius > block.x && sphere.x - sphere.radius < block.x + block.width) 
                         sphere.dy = -sphere.dy;
                      else 
                         sphere.dx = -sphere.dx;         
                }   
             }
          });
-
       };
 
       resetBlocks();
 
       const gameLoop = () => {
-        
+
          context.clearRect(0, 0, canvas.width, canvas.height);
          context.fillStyle = "black";
          context.fillRect(0, 0, canvas.width, canvas.height);
-        
          drawBlock();
          drawSphere();
          drawPaddle();
-         updateBall();
          
+         if (!gameStarted) return;
+         
+         updateBall();
       };
 
       const handleMouseClick = () => {
-         restartBallMovement();
-         resetBlocks();
+   
+            restartBallMovement();
+            resetBlocks();
+            setGameStarted(true);
+            if (audioRef.current)
+               audioRef.current.play();
          
       };
 
-      /* Try #1, Smooth Framerate 120 */
-
-      const intervalId = setInterval(() => { gameLoop() }, 1000 / 120);
+      /* Smooth Framerate 120 */
+      const intervalId = setInterval(() => gameLoop(), 1000 / 120);
 
       /* "Canvas" Listeners */
-
       canvas.addEventListener("mousemove", handleMouseMove);
       canvas.addEventListener("click", handleMouseClick);
-
-      restartBallMovement();
 
       return () => {
          clearInterval(intervalId);
          canvas.removeEventListener("mousemove", handleMouseMove);
          canvas.removeEventListener("click", handleMouseClick);
       };
-
-   }, []);
+   }, [gameStarted]); 
 
    return (
       <div className="rounded-xl flex items-center justify-center h-screen bg-gray-100">
-         <AudioPlayer />
-         <canvas ref={canvasRef} width={600} height={600} style={{ cursor: "none", borderRadius: "30px"}}></canvas>
+         
+         <AudioPlayer className="bg-black" audioRef={ audioRef }  width={600} height={60} />
+         <canvas ref={ canvasRef } width={ 600 } height={ 600 } style={{ cursor: "none", borderRadius: "30px"}}></canvas>
       </div>
    );
 };
